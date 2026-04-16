@@ -483,6 +483,52 @@
       // After animation ends (4s + 300ms buffer), show result
       setTimeout(() => showResult(prize), 4300);
     }
+
+    // ── SHOW RESULT ───────────────────────────────────────────────────
+    function showResult(prize) {
+      const isNothing = prize.name === 'Nothing';
+
+      document.getElementById('result-heading').textContent = isNothing
+        ? `Thank you for playing!`
+        : `Congratulations!`;
+
+      if (isNothing) {
+        document.getElementById('prize-card').style.display = 'none';
+        document.getElementById('result-instruction').textContent =
+          'Better luck next time! Come visit us again soon.';
+        document.getElementById('result-email-note').textContent =
+          'Check your email — you may be able to pick up your loyalty card at the counter.';
+      } else {
+        document.getElementById('prize-card').style.display = 'block';
+        document.getElementById('prize-name').textContent = prize.name;
+        document.getElementById('result-instruction').textContent =
+          'Show this to our team at the counter to claim your prize.';
+        document.getElementById('result-email-note').textContent =
+          'A confirmation has been sent to your email.';
+      }
+
+      if (window._gasSaveOk === false) {
+        document.getElementById('result-fallback').style.display = 'block';
+      }
+
+      showState('state-result');
+    }
+
+    // ── GAS SAVE ──────────────────────────────────────────────────────
+    // Uses Content-Type: text/plain to avoid CORS preflight on POST
+    async function saveToGAS(data) {
+      try {
+        const res = await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify(data),
+          headers: { 'Content-Type': 'text/plain' },
+        });
+        const json = await res.json();
+        return json.ok === true;
+      } catch (e) {
+        return false;
+      }
+    }
   </script>
 </body>
 </html>
