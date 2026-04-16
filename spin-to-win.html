@@ -419,6 +419,70 @@
 
     // Build wheel on page load
     buildWheel();
+
+    // ── WEIGHTED RANDOM ───────────────────────────────────────────────
+    function getWeightedPrize() {
+      const total = PRIZES.reduce((s, p) => s + p.weight, 0);
+      let rand = Math.random() * total;
+      for (const prize of PRIZES) {
+        rand -= prize.weight;
+        if (rand <= 0) return prize;
+      }
+      return PRIZES[PRIZES.length - 1];
+    }
+
+    // ── SEGMENT START ANGLES ──────────────────────────────────────────
+    // Precompute each segment's center angle (clockwise from top)
+    function getSegmentCenterAngle(prizeIndex) {
+      const totalWeight = PRIZES.reduce((s, p) => s + p.weight, 0);
+      let angle = 0;
+      for (let i = 0; i < prizeIndex; i++) {
+        angle += (PRIZES[i].weight / totalWeight) * 360;
+      }
+      angle += (PRIZES[prizeIndex].weight / totalWeight) * 360 / 2;
+      return angle;
+    }
+
+    // ── SPIN ──────────────────────────────────────────────────────────
+    let currentRotation = 0; // track total rotation so far
+
+    function startSpin() {
+      const prize     = getWeightedPrize();
+      const prizeIndex = PRIZES.indexOf(prize);
+      const centerAngle = getSegmentCenterAngle(prizeIndex);
+
+      // To land winning segment at top: rotate (360 - centerAngle) + N full turns
+      const extraTurns = 5 + Math.floor(Math.random() * 4); // 5–8
+      const targetAngle = currentRotation + extraTurns * 360 + (360 - centerAngle % 360);
+      currentRotation = targetAngle;
+
+      showState('state-spin');
+
+      // Slight delay so state transition renders before animation begins
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          document.getElementById('wheel').style.transform = `rotate(${targetAngle}deg)`;
+        });
+      });
+
+      // Save to GAS in background while wheel spins
+      const formData = {
+        action:    'save',
+        firstName: document.getElementById('firstName').value.trim(),
+        lastName:  document.getElementById('lastName').value.trim(),
+        phone:     document.getElementById('phone').value.trim(),
+        email:     document.getElementById('email').value.trim(),
+        prize:     prize.name,
+        timestamp: new Date().toISOString(),
+      };
+      saveToGAS(formData).then(ok => {
+        // Store result for after animation completes
+        window._gasSaveOk = ok;
+      });
+
+      // After animation ends (4s + 300ms buffer), show result
+      setTimeout(() => showResult(prize), 4300);
+    }
   </script>
 </body>
 </html>
