@@ -338,6 +338,87 @@
         btn.textContent = 'Spin to Win';
       }
     }
+
+    // ── WHEEL BUILDER ─────────────────────────────────────────────────
+    // Converts a clockwise-from-top angle (deg) to SVG x,y on the rim
+    // cx=100, cy=100 (center of 200x200 viewBox), r=96
+    const CX = 100, CY = 100, R = 96, TEXT_R = 68;
+
+    function polarToXY(angleDeg, radius) {
+      const rad = (angleDeg - 90) * (Math.PI / 180); // -90 rotates 0° to top
+      return {
+        x: CX + radius * Math.cos(rad),
+        y: CY + radius * Math.sin(rad),
+      };
+    }
+
+    function buildSegmentPath(startAngle, endAngle) {
+      const start   = polarToXY(startAngle, R);
+      const end     = polarToXY(endAngle, R);
+      const large   = endAngle - startAngle > 180 ? 1 : 0;
+      return `M ${CX} ${CY} L ${start.x} ${start.y} A ${R} ${R} 0 ${large} 1 ${end.x} ${end.y} Z`;
+    }
+
+    function buildWheel() {
+      const totalWeight = PRIZES.reduce((s, p) => s + p.weight, 0);
+      const svg = document.getElementById('wheel');
+      svg.innerHTML = '';
+
+      let currentAngle = 0;
+      PRIZES.forEach((prize, i) => {
+        const sliceDeg  = (prize.weight / totalWeight) * 360;
+        const endAngle  = currentAngle + sliceDeg;
+        const midAngle  = currentAngle + sliceDeg / 2;
+
+        // Segment path
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', buildSegmentPath(currentAngle, endAngle));
+        path.setAttribute('fill', prize.color);
+        path.setAttribute('stroke', '#FEFAF4');
+        path.setAttribute('stroke-width', '1.5');
+        svg.appendChild(path);
+
+        // Text label — split on space, max 2 lines
+        const mid     = polarToXY(midAngle, TEXT_R);
+        const words   = prize.name.split(' ');
+        const lines   = words.length > 2
+          ? [words.slice(0, Math.ceil(words.length / 2)).join(' '), words.slice(Math.ceil(words.length / 2)).join(' ')]
+          : words.length === 1 ? [words[0]] : words;
+
+        const textG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        textG.setAttribute('transform', `rotate(${midAngle}, ${CX}, ${CY})`);
+
+        lines.forEach((line, li) => {
+          const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          t.setAttribute('x', CX);
+          t.setAttribute('y', CY - TEXT_R + (li - (lines.length - 1) / 2) * 11);
+          t.setAttribute('text-anchor', 'middle');
+          t.setAttribute('dominant-baseline', 'middle');
+          t.setAttribute('font-family', 'Inter, sans-serif');
+          t.setAttribute('font-size', '7.5');
+          t.setAttribute('font-weight', '500');
+          t.setAttribute('fill', prize.textColor);
+          t.textContent = line;
+          textG.appendChild(t);
+        });
+        svg.appendChild(textG);
+
+        currentAngle = endAngle;
+      });
+
+      // Center circle (decorative)
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', CX);
+      circle.setAttribute('cy', CY);
+      circle.setAttribute('r', '14');
+      circle.setAttribute('fill', '#FEFAF4');
+      circle.setAttribute('stroke', '#C8A96E');
+      circle.setAttribute('stroke-width', '2');
+      svg.appendChild(circle);
+    }
+
+    // Build wheel on page load
+    buildWheel();
   </script>
 </body>
 </html>
