@@ -86,17 +86,23 @@ function sendConfirmationEmail(data) {
     : 'Your prize at Maison St Honoré 🎉';
   var html      = isNothing ? buildNothingEmail(data) : buildPrizeEmail(data);
 
+  // Fetch logo as blob for inline embedding (cid:logo) — works in all email clients
+  var logoBlob = UrlFetchApp
+    .fetch('https://andreas97401.github.io/maison-st-honore-spin/logo.png')
+    .getBlob()
+    .setName('logo');
+
   MailApp.sendEmail({
-    to:       data.email,
-    subject:  subject,
-    htmlBody: html,
-    name:     FROM_NAME,
+    to:           data.email,
+    subject:      subject,
+    htmlBody:     html,
+    name:         FROM_NAME,
+    inlineImages: { logo: logoBlob },
   });
 }
 
 // ── PRIZE EMAIL TEMPLATE ──────────────────────────────────────────
 function buildPrizeEmail(data) {
-  var logoDataUri = getLogoDataUri();
   return '<!DOCTYPE html><html><head><meta charset="UTF-8"/></head><body style="margin:0;padding:0;background:#F5F0EB;">' +
     '<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F0EB;padding:32px 16px;">' +
     '<tr><td align="center">' +
@@ -104,7 +110,7 @@ function buildPrizeEmail(data) {
 
     // Header
     '<tr><td style="background:#1C2436;padding:32px 24px;text-align:center;">' +
-    '<img src="' + logoDataUri + '" width="100" height="100" alt="Maison St Honoré" style="display:block;margin:0 auto 12px;" />' +
+    '<img src="cid:logo" width="100" height="100" alt="Maison St Honoré" style="display:block;margin:0 auto 12px;" />' +
     '<p style="margin:0;font-family:Georgia,serif;font-style:italic;font-size:13px;color:#C8A96E;letter-spacing:0.15em;">PATISSERIE FRANÇAISE</p>' +
     '</td></tr>' +
 
@@ -148,7 +154,6 @@ function buildPrizeEmail(data) {
 
 // ── NOTHING EMAIL TEMPLATE ────────────────────────────────────────
 function buildNothingEmail(data) {
-  var logoDataUri = getLogoDataUri();
   return '<!DOCTYPE html><html><head><meta charset="UTF-8"/></head><body style="margin:0;padding:0;background:#F5F0EB;">' +
     '<table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F0EB;padding:32px 16px;">' +
     '<tr><td align="center">' +
@@ -156,7 +161,7 @@ function buildNothingEmail(data) {
 
     // Header
     '<tr><td style="background:#1C2436;padding:32px 24px;text-align:center;">' +
-    '<img src="' + logoDataUri + '" width="100" height="100" alt="Maison St Honoré" style="display:block;margin:0 auto 12px;" />' +
+    '<img src="cid:logo" width="100" height="100" alt="Maison St Honoré" style="display:block;margin:0 auto 12px;" />' +
     '<p style="margin:0;font-family:Georgia,serif;font-style:italic;font-size:13px;color:#C8A96E;letter-spacing:0.15em;">PATISSERIE FRANÇAISE</p>' +
     '</td></tr>' +
 
@@ -187,9 +192,4 @@ function buildNothingEmail(data) {
     '</td></tr>' +
 
     '</table></td></tr></table></body></html>';
-}
-
-// ── LOGO ──────────────────────────────────────────────────────────
-function getLogoDataUri() {
-  return 'https://andreas97401.github.io/maison-st-honore-spin/logo.png';
 }
