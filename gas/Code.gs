@@ -1,5 +1,5 @@
 // ── CONFIGURATION ─────────────────────────────────────────────────
-var SHEET_ID   = 'REPLACE_WITH_YOUR_SPREADSHEET_ID';
+var SHEET_ID   = '1POODoEAiqzsKjEAHEwc3iF-B1EhTkN6YImze8PEdvV8';
 var SHEET_NAME = 'Spin to Win';
 var FROM_NAME  = 'Maison St Honoré';
 var CAFE_ADDRESS = '13 Bramall St, Perth WA 6004';
@@ -40,7 +40,7 @@ function handleCheck(email) {
 
   if (lastRow < 2) return corsOutput({ ok: true }); // empty sheet
 
-  var emails = sheet.getRange(2, 5, lastRow - 1, 1).getValues().flat();
+  var emails = sheet.getRange(2, 4, lastRow - 1, 1).getValues().flat();
   var isDuplicate = emails.some(function(e) {
     return typeof e === 'string' && e.toLowerCase() === email.toLowerCase();
   });
@@ -55,20 +55,20 @@ function handleSave(data) {
 
   // Race condition guard — check again before writing
   if (lastRow >= 2) {
-    var emails = sheet.getRange(2, 5, lastRow - 1, 1).getValues().flat();
+    var emails = sheet.getRange(2, 4, lastRow - 1, 1).getValues().flat();
     var duplicate = emails.some(function(e) {
       return typeof e === 'string' && e.toLowerCase() === data.email.toLowerCase();
     });
     if (duplicate) return corsOutput({ ok: false, reason: 'duplicate' });
   }
 
-  // Append row: Timestamp | First Name | Last Name | Phone | Email | Prize
+  // Append row: First Name | Last Name | Phone | Email | Date | Prize
   sheet.appendRow([
-    data.timestamp,
     data.firstName,
     data.lastName,
     data.phone,
     data.email,
+    data.timestamp,
     data.prize
   ]);
 
