@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maison St Honoré — Spin to Win</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ── DESIGN TOKENS ───────────────────────────── */
+    :root {
+      --bg:        #FEFAF4;
+      --text:      #2C2415;
+      --gold:      #C8A96E;
+      --gold-lt:   #F0E6D0;
+      --gold-dk:   #8A6A2A;
+      --dark:      #1C2436;
+      --muted:     #7A6A58;
+      --radius:    2px;
+      --serif:     'Playfair Display', Georgia, serif;
+      --sans:      'Inter', system-ui, sans-serif;
+    }
+
+    /* ── RESET ───────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── LAYOUT ──────────────────────────────────── */
+    .app {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 24px 48px;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ── STATE VISIBILITY ────────────────────────── */
+    .state { display: none; width: 100%; }
+    .state.active { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+
+    /* ── LOGO ────────────────────────────────────── */
+    .logo { width: 120px; height: 120px; object-fit: contain; }
+
+    /* ── TAGLINE ─────────────────────────────────── */
+    .tagline {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 1.05rem;
+      color: var(--muted);
+      text-align: center;
+      letter-spacing: 0.02em;
+    }
+
+    /* ── FORM ────────────────────────────────────── */
+    .form-group { width: 100%; display: flex; flex-direction: column; gap: 4px; }
+    label { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid var(--gold);
+      border-radius: var(--radius);
+      background: var(--bg);
+      font-family: var(--sans);
+      font-size: 1rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus { border-color: var(--gold-dk); }
+    input.error { border-color: #C0392B; }
+    .field-error { font-size: 0.75rem; color: #C0392B; min-height: 1em; }
+
+    /* ── BUTTON ──────────────────────────────────── */
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: transparent;
+      color: var(--text);
+      font-family: var(--serif);
+      font-size: 1rem;
+      font-weight: 600;
+      border: 1.5px solid var(--gold);
+      border-radius: var(--radius);
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      margin-top: 8px;
+    }
+    .btn:hover { background: var(--gold-lt); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* ── DIVIDER ─────────────────────────────────── */
+    .divider {
+      width: 40px;
+      height: 1px;
+      background: var(--gold);
+      margin: 4px auto;
+    }
+
+    /* ── WHEEL SECTION ───────────────────────────── */
+    .wheel-wrap {
+      position: relative;
+      width: 280px;
+      height: 280px;
+    }
+    #wheel {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99);
+    }
+    .pointer {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-top: 22px solid var(--gold);
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+    }
+
+    /* ── SPIN LABEL ──────────────────────────────── */
+    .spin-label {
+      font-family: var(--serif);
+      font-style: italic;
+      font-size: 1.1rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* ── RESULT ──────────────────────────────────── */
+    .result-heading {
+      font-family: var(--serif);
+      font-size: 1.9rem;
+      font-weight: 600;
+      text-align: center;
+      line-height: 1.2;
+      color: var(--text);
+    }
+    .prize-card {
+      width: 100%;
+      padding: 24px;
+      background: var(--gold-lt);
+      border: 1.5px solid var(--gold);
+      border-radius: var(--radius);
+      text-align: center;
+    }
+    .prize-card .prize-name {
+      font-family: var(--serif);
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .result-instruction {
+      font-size: 0.9rem;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.5;
+    }
+    .result-email-note {
+      font-size: 0.8rem;
+      color: var(--muted);
+      text-align: center;
+      font-style: italic;
+    }
+    .result-fallback {
+      font-size: 0.78rem;
+      color: #C0392B;
+      text-align: center;
+      display: none;
+    }
+
+    /* ── FADE ANIMATION ──────────────────────────── */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .state.active { animation: fadeIn 0.5s ease both; }
+  </style>
+</head>
+<body>
+  <main class="app">
+
+    <!-- STATE 1: FORM -->
+    <section id="state-form" class="state active">
+      <img src="LOGO_BASE64_PLACEHOLDER" alt="Maison St Honoré" class="logo" />
+      <div class="divider"></div>
+      <p class="tagline">A little gift from us to you</p>
+
+      <div class="form-group">
+        <label for="firstName">First Name</label>
+        <input type="text" id="firstName" placeholder="Jane" autocomplete="given-name" />
+        <span class="field-error" id="err-firstName"></span>
+      </div>
+      <div class="form-group">
+        <label for="lastName">Last Name</label>
+        <input type="text" id="lastName" placeholder="Doe" autocomplete="family-name" />
+        <span class="field-error" id="err-lastName"></span>
+      </div>
+      <div class="form-group">
+        <label for="phone">Phone</label>
+        <input type="tel" id="phone" placeholder="04XX XXX XXX" autocomplete="tel" />
+        <span class="field-error" id="err-phone"></span>
+      </div>
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="jane@example.com" autocomplete="email" />
+        <span class="field-error" id="err-email"></span>
+      </div>
+
+      <button class="btn" id="btn-spin" onclick="handleSubmit()">Spin to Win</button>
+    </section>
+
+    <!-- STATE 2: SPIN -->
+    <section id="state-spin" class="state">
+      <img src="LOGO_BASE64_PLACEHOLDER" alt="Maison St Honoré" class="logo" />
+      <div class="divider"></div>
+      <div class="wheel-wrap">
+        <div class="pointer"></div>
+        <svg id="wheel" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <!-- segments injected by JS -->
+        </svg>
+      </div>
+      <p class="spin-label">Good luck…</p>
+    </section>
+
+    <!-- STATE 3: RESULT -->
+    <section id="state-result" class="state">
+      <img src="LOGO_BASE64_PLACEHOLDER" alt="Maison St Honoré" class="logo" />
+      <div class="divider"></div>
+      <h1 class="result-heading" id="result-heading"></h1>
+      <div id="prize-card" class="prize-card" style="display:none">
+        <p class="prize-name" id="prize-name"></p>
+      </div>
+      <p class="result-instruction" id="result-instruction"></p>
+      <p class="result-email-note" id="result-email-note"></p>
+      <p class="result-fallback" id="result-fallback">We couldn't send your confirmation email — please ask our team.</p>
+    </section>
+
+  </main>
+  <script>
+    // ── CONFIGURATION ─────────────────────────────────────────────────
+    const GAS_URL = "https://script.google.com/macros/s/REPLACE_WITH_YOUR_DEPLOYMENT_ID/exec";
+
+    // ── PRIZES ────────────────────────────────────────────────────────
+    const PRIZES = [
+      { name: "Nothing",           weight: 30, color: "#E8DCC8", textColor: "#2C2415" },
+      { name: "Free Stamp",        weight: 25, color: "#D4C4A0", textColor: "#2C2415" },
+      { name: "Free Coffee",       weight: 20, color: "#C8A96E", textColor: "#FEFAF4" },
+      { name: "Free Viennoiserie", weight: 12, color: "#2C2415", textColor: "#FEFAF4" },
+      { name: "Free Macaron",      weight:  8, color: "#8A6A2A", textColor: "#FEFAF4" },
+      { name: "Free Drink",        weight:  5, color: "#1C2436", textColor: "#FEFAF4" },
+    ];
+
+    // placeholder — JS logic added in subsequent tasks
+  </script>
+</body>
+</html>
