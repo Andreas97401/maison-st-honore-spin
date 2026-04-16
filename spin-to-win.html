@@ -265,7 +265,79 @@
       { name: "Free Drink",        weight:  5, color: "#1C2436", textColor: "#FEFAF4" },
     ];
 
-    // placeholder — JS logic added in subsequent tasks
+    // ── STATE MANAGEMENT ──────────────────────────────────────────────
+    function showState(id) {
+      document.querySelectorAll('.state').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    // ── FORM VALIDATION ───────────────────────────────────────────────
+    function validateForm() {
+      let valid = true;
+
+      const fields = [
+        { id: 'firstName', errId: 'err-firstName', label: 'First name is required.' },
+        { id: 'lastName',  errId: 'err-lastName',  label: 'Last name is required.'  },
+        { id: 'phone',     errId: 'err-phone',     label: 'Phone is required.'      },
+        { id: 'email',     errId: 'err-email',     label: 'Email is required.'      },
+      ];
+
+      fields.forEach(({ id, errId, label }) => {
+        const input = document.getElementById(id);
+        const err   = document.getElementById(errId);
+        input.classList.remove('error');
+        err.textContent = '';
+
+        if (!input.value.trim()) {
+          input.classList.add('error');
+          err.textContent = label;
+          valid = false;
+        }
+      });
+
+      // extra: email format check
+      const emailInput = document.getElementById('email');
+      const emailErr   = document.getElementById('err-email');
+      if (emailInput.value.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput.value.trim())) {
+        emailInput.classList.add('error');
+        emailErr.textContent = 'Please enter a valid email address.';
+        valid = false;
+      }
+
+      return valid;
+    }
+
+    // ── HANDLE SUBMIT ─────────────────────────────────────────────────
+    async function handleSubmit() {
+      if (!validateForm()) return;
+
+      const btn = document.getElementById('btn-spin');
+      btn.disabled = true;
+      btn.textContent = 'Checking…';
+
+      const email = document.getElementById('email').value.trim();
+
+      try {
+        const res  = await fetch(`${GAS_URL}?action=check&email=${encodeURIComponent(email)}`);
+        const data = await res.json();
+
+        if (!data.ok && data.reason === 'duplicate') {
+          document.getElementById('email').classList.add('error');
+          document.getElementById('err-email').textContent = 'This email has already been used.';
+          btn.disabled = false;
+          btn.textContent = 'Spin to Win';
+          return;
+        }
+
+        // GAS confirmed OK — proceed to spin
+        startSpin();
+      } catch (e) {
+        document.getElementById('err-email').textContent = 'Something went wrong. Please try again.';
+        document.getElementById('err-email').style.color = '#C0392B';
+        btn.disabled = false;
+        btn.textContent = 'Spin to Win';
+      }
+    }
   </script>
 </body>
 </html>
