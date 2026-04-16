@@ -266,12 +266,12 @@
 
     // ── PRIZES ────────────────────────────────────────────────────────
     const PRIZES = [
-      { name: "Nothing",           weight: 30, color: "#E8DCC8", textColor: "#2C2415" },
-      { name: "Free Stamp",        weight: 25, color: "#D4C4A0", textColor: "#2C2415" },
-      { name: "Free Coffee",       weight: 20, color: "#C8A96E", textColor: "#FEFAF4" },
-      { name: "Free Viennoiserie", weight: 12, color: "#2C2415", textColor: "#FEFAF4" },
-      { name: "Free Macaron",      weight:  8, color: "#8A6A2A", textColor: "#FEFAF4" },
-      { name: "Free Drink",        weight:  5, color: "#1C2436", textColor: "#FEFAF4" },
+      { name: "Nothing",           weight: 50, color: "#E8DCC8", textColor: "#2C2415" },
+      { name: "Free Stamp",        weight: 30, color: "#D4C4A0", textColor: "#2C2415" },
+      { name: "Free Coffee",       weight: 10, color: "#C8A96E", textColor: "#FEFAF4" },
+      { name: "Free Viennoiserie", weight:  5, color: "#2C2415", textColor: "#FEFAF4" },
+      { name: "Free Macaron",      weight:  3, color: "#8A6A2A", textColor: "#FEFAF4" },
+      { name: "Free Drink",        weight:  2, color: "#1C2436", textColor: "#FEFAF4" },
     ];
 
     // ── STATE MANAGEMENT ──────────────────────────────────────────────
@@ -474,8 +474,8 @@
         });
       });
 
-      // Save to GAS in background while wheel spins
-      const formData = {
+      // Store form data — email sent only when customer clicks Continue
+      window._pendingFormData = {
         action:    'save',
         firstName: document.getElementById('firstName').value.trim(),
         lastName:  document.getElementById('lastName').value.trim(),
@@ -484,10 +484,6 @@
         prize:     prize.name,
         timestamp: new Date().toISOString(),
       };
-      saveToGAS(formData).then(ok => {
-        // Store result for after animation completes
-        window._gasSaveOk = ok;
-      });
 
       // After animation ends (4s + 300ms buffer), show result
       setTimeout(() => showResult(prize), 4300);
@@ -521,13 +517,20 @@
       const prize = window._currentPrize;
       const isNothing = prize && prize.name === 'Nothing';
 
-      document.getElementById('confirm-message').textContent = isNothing
-        ? "We've sent you an email with more info. Don't forget to pick up your loyalty card at the counter!"
-        : "A confirmation has been sent to your email. See you next time!";
-
-      if (window._gasSaveOk === false) {
-        document.getElementById('confirm-fallback').style.display = 'block';
+      // Trigger GAS save + email on Continue click
+      if (window._pendingFormData) {
+        saveToGAS(window._pendingFormData).then(ok => {
+          if (!ok) {
+            const el = document.getElementById('confirm-fallback');
+            if (el) el.style.display = 'block';
+          }
+        });
+        window._pendingFormData = null;
       }
+
+      document.getElementById('confirm-message').textContent = isNothing
+        ? "We've sent you an email. Don't forget — you can pick up your free loyalty card at the counter if you don't have one yet!"
+        : "A confirmation has been sent to your email. Show it to our team to claim your prize. See you soon!";
 
       showState('state-confirm');
     }
