@@ -369,13 +369,12 @@
     }
 
     function buildWheel() {
-      const totalWeight = PRIZES.reduce((s, p) => s + p.weight, 0);
+      const sliceDeg = 360 / PRIZES.length; // equal visual segments
       const svg = document.getElementById('wheel');
       svg.innerHTML = '';
 
       let currentAngle = 0;
       PRIZES.forEach((prize, i) => {
-        const sliceDeg  = (prize.weight / totalWeight) * 360;
         const endAngle  = currentAngle + sliceDeg;
         const midAngle  = currentAngle + sliceDeg / 2;
 
@@ -443,13 +442,8 @@
     // ── SEGMENT START ANGLES ──────────────────────────────────────────
     // Precompute each segment's center angle (clockwise from top)
     function getSegmentCenterAngle(prizeIndex) {
-      const totalWeight = PRIZES.reduce((s, p) => s + p.weight, 0);
-      let angle = 0;
-      for (let i = 0; i < prizeIndex; i++) {
-        angle += (PRIZES[i].weight / totalWeight) * 360;
-      }
-      angle += (PRIZES[prizeIndex].weight / totalWeight) * 360 / 2;
-      return angle;
+      const sliceDeg = 360 / PRIZES.length;
+      return prizeIndex * sliceDeg + sliceDeg / 2;
     }
 
     // ── SPIN ──────────────────────────────────────────────────────────
